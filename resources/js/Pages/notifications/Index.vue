@@ -5,9 +5,14 @@
     <div class="card">
       <div class="top">
         <div class="muted">Unread: {{ unreadCount }}</div>
-        <button class="blue" type="button" @click="load" :disabled="loading">
-          {{ loading ? 'Loading...' : 'Refresh' }}
-        </button>
+        <div class="actions">
+          <button class="gray" type="button" @click="markAllRead" :disabled="loading || unreadCount === 0">
+            Mark all as read
+          </button>
+          <button class="blue" type="button" @click="load" :disabled="loading">
+            {{ loading ? 'Loading...' : 'Refresh' }}
+          </button>
+        </div>
       </div>
 
       <div v-if="loading" class="empty">Loading...</div>
@@ -43,6 +48,11 @@ async function load() {
     const res = await window.axios.get('/api/notifications');
     notifications.value = res.data.notifications || [];
     unreadCount.value = res.data.unreadCount || 0;
+    window.dispatchEvent(
+      new CustomEvent('notifications-updated', {
+        detail: { unreadCount: unreadCount.value },
+      })
+    );
   } finally {
     loading.value = false;
   }
@@ -54,13 +64,25 @@ async function markRead(n) {
   await load();
 }
 
+async function markAllRead() {
+  loading.value = true;
+  try {
+    await window.axios.post('/api/notifications/read-all');
+    await load();
+  } finally {
+    loading.value = false;
+  }
+}
+
 onMounted(load);
 </script>
 
 <style scoped>
 .card{background:#fff;border:1px solid #e6eef9;border-radius:12px;padding:14px;}
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;}
+.actions{display:flex;gap:8px;align-items:center;}
 .blue{background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;}
+.gray{background:#eef6ff;color:#0d6efd;border:1px solid #dbeafe;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:900;}
 .muted{color:#64748b;font-size:13px;font-weight:800;}
 .list{display:flex;flex-direction:column;gap:8px;}
 .item{border:1px solid #eef2f7;background:#fff;border-radius:12px;padding:12px;text-align:left;cursor:pointer;}

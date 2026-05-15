@@ -17,6 +17,19 @@
         <button class="blue" type="button" @click="load" :disabled="loading">
           {{ loading ? 'Loading...' : 'Load' }}
         </button>
+
+        <button class="gray" type="button" @click="exportCsv" :disabled="loading || !summary">
+          Export CSV
+        </button>
+
+        <button class="light" type="button" @click="printReport" :disabled="!summary">
+          Print
+        </button>
+      </div>
+
+      <div class="print-head" v-if="summary">
+        <div class="print-title">Surigao Prime - Reports Summary</div>
+        <div class="print-sub">Generated: {{ new Date().toLocaleString() }}</div>
       </div>
 
       <div v-if="summary" class="summary">
@@ -88,6 +101,18 @@ async function load() {
   }
 }
 
+function exportCsv() {
+  const qs = new URLSearchParams();
+  if (from.value) qs.set('from', from.value);
+  if (to.value) qs.set('to', to.value);
+  const url = `/api/admin/reports/summary.csv${qs.toString() ? `?${qs.toString()}` : ''}`;
+  window.open(url, '_blank');
+}
+
+function printReport() {
+  window.print();
+}
+
 onMounted(load);
 </script>
 
@@ -95,6 +120,8 @@ onMounted(load);
 .card{background:#fff;border:1px solid #e6eef9;border-radius:12px;padding:14px;}
 .filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;}
 .blue{background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;}
+.gray{background:#64748b;color:#fff;border:0;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;}
+.light{background:#eff6ff;color:#0d6efd;border:1px solid #dbeafe;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:900;}
 .summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px;}
 .box{border:1px solid #eef2f7;border-radius:12px;padding:12px;}
 .k{font-size:12px;color:#64748b;}
@@ -104,4 +131,14 @@ onMounted(load);
 .table{width:100%;border-collapse:collapse;}
 .table th,.table td{border-bottom:1px solid #eef2f7;padding:8px;text-align:left;font-size:14px;}
 .empty{margin-top:10px;color:#64748b;}
+
+.print-head{display:none;margin-top:10px;padding:10px;border:1px solid #eef2f7;border-radius:12px;background:#f8fafc;}
+.print-title{font-weight:900;color:#0f172a;}
+.print-sub{color:#64748b;font-size:12px;margin-top:2px;}
+
+@media print{
+  .filters{display:none;}
+  .print-head{display:block;}
+  .card{border:0;}
+}
 </style>

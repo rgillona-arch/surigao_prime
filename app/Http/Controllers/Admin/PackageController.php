@@ -23,12 +23,12 @@ class PackageController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
+        $datas = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'integer', 'min:0'],
             'slots_per_day' => ['required', 'integer', 'min:0'],
-            'image_url' => ['nullable', 'url', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:2048'],
         ]);
 
         Package::create($data);
@@ -48,7 +48,7 @@ class PackageController extends Controller
             'description' => ['nullable', 'string'],
             'price' => ['required', 'integer', 'min:0'],
             'slots_per_day' => ['required', 'integer', 'min:0'],
-            'image_url' => ['nullable', 'url', 'max:2048'],
+            'image_url' => ['nullable', 'string', 'max:2048'],
         ]);
 
         $package->update($data);

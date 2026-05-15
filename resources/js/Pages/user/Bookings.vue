@@ -352,9 +352,25 @@ async function load() {
 
 async function createBooking() {
   creating.value = true;
-  await window.axios.post('/api/bookings', createForm);
-  creating.value = false;
-  await load();
+  try {
+    await window.axios.post('/api/bookings', createForm);
+    await load();
+  } catch (e) {
+    const status = e?.response?.status;
+    if (status === 422) {
+      const errors = e?.response?.data?.errors;
+      const first = errors ? Object.values(errors).flat()?.[0] : null;
+      alert(first || 'Booking failed. Please check your details and try again.');
+      return;
+    }
+    if (status === 401) {
+      alert('Your session expired. Please login again.');
+      return;
+    }
+    alert('Booking failed. Please try again.');
+  } finally {
+    creating.value = false;
+  }
 }
 
 async function cancelBooking(id) {
@@ -518,6 +534,7 @@ onMounted(load);
 </script>
 
 <style scoped>
+.page, .page *{box-sizing:border-box;}
 .page{max-width:1100px;margin:0 auto;padding:18px 14px 26px;}
 .content{display:flex;flex-direction:column;gap:14px;}
 .hero{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:14px;}
@@ -535,7 +552,7 @@ onMounted(load);
 .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
 .span2{grid-column:1 / -1;}
 
-.card{background:#fff;border:1px solid #e6eef9;border-radius:12px;padding:14px;margin-bottom:16px;}
+.card{background:#fff;border:1px solid #e6eef9;border-radius:12px;padding:14px;margin-bottom:16px;max-width:100%;min-width:0;}
 .card-lg{border-radius:16px;box-shadow:0 10px 28px rgba(2,8,23,0.04);}
 .sec-top{display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .muted{color:#64748b;font-size:13px;font-weight:800;}
@@ -545,11 +562,11 @@ onMounted(load);
 button{background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:8px 10px;cursor:pointer;}
 .btn{background:#0d6efd;color:#fff;border:0;border-radius:10px;padding:9px 12px;cursor:pointer;font-weight:900;font-size:13px;}
 .btn.gray{background:#64748b;}
-input,select{width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef9;}
+input,select,textarea{width:100%;max-width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef9;box-sizing:border-box;}
 label{display:block;font-size:13px;color:#41586b;}
 .docs{display:flex;flex-direction:column;gap:4px;}
 .doc{color:#0d6efd;text-decoration:none;font-weight:800;font-size:13px;}
-.pkg-preview{display:flex;gap:12px;align-items:flex-start;border:1px solid #eef2f7;border-radius:14px;padding:12px;background:#fbfdff;}
+.pkg-preview{display:flex;gap:12px;align-items:flex-start;border:1px solid #eef2f7;border-radius:14px;padding:12px;background:#fbfdff;min-width:0;}
 .pkg-preview.pro{min-height:148px;flex-direction:column;}
 .pkg-img{width:160px;height:100px;border-radius:14px;overflow:hidden;border:1px solid #e6eef9;background:#f8fafc;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer;flex:0 0 auto;}
 .pkg-img.lg{width:100%;max-width:100%;height:160px;}

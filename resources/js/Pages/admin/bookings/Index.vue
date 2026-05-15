@@ -57,11 +57,11 @@
                 </button>
               </td>
               <td class="actions">
-                <button @click="approve(b.id)">Approve</button>
-                <button class="gray" @click="cancel(b.id)">Cancel</button>
-                <button class="green" @click="verifyPayment(b.id)" :disabled="b.payment_status !== 'Submitted' && b.payment_status !== 'Cash Pending'">Verify Payment</button>
-                <button class="amber" @click="rejectPayment(b.id)" :disabled="b.payment_status !== 'Submitted' && b.payment_status !== 'Cash Pending'">Reject</button>
-                <button class="red" @click="destroy(b.id)">Delete</button>
+                <button class="blue" type="button" @click="approve(b.id)" :disabled="!canApprove(b)">Approve</button>
+                <button class="gray" type="button" @click="cancel(b.id)" :disabled="!canCancel(b)">Cancel</button>
+                <button class="green" type="button" @click="verifyPayment(b.id)" :disabled="!canVerifyPayment(b)">Verify Payment</button>
+                <button class="amber" type="button" @click="rejectPayment(b.id)" :disabled="!canVerifyPayment(b)">Reject</button>
+                <button class="red" type="button" @click="destroy(b.id)">Delete</button>
               </td>
             </tr>
 
@@ -160,6 +160,24 @@ async function rejectPayment(id) {
   await load();
 }
 
+function canApprove(b) {
+  const s = String(b?.status || '').toLowerCase();
+  if (s.includes('approved')) return false;
+  if (s.includes('cancel')) return false;
+  return true;
+}
+
+function canCancel(b) {
+  const s = String(b?.status || '').toLowerCase();
+  if (s.includes('approved')) return false;
+  if (s.includes('cancel')) return false;
+  return true;
+}
+
+function canVerifyPayment(b) {
+  return b?.payment_status === 'Submitted' || b?.payment_status === 'Cash Pending';
+}
+
 function proofUrl(path) {
   return `/storage/${path}`;
 }
@@ -221,6 +239,7 @@ onMounted(load);
 .table th,.table td{border-bottom:1px solid #eef2f7;padding:8px;text-align:left;font-size:14px;}
 .actions{display:flex;flex-wrap:wrap;gap:6px;}
 button{background:#0d6efd;color:#fff;border:0;border-radius:8px;padding:7px 9px;cursor:pointer;font-size:12px;}
+button:disabled{opacity:.45;cursor:not-allowed;}
 .small{background:#eef6ff;color:#0d6efd;font-weight:900;border:1px solid #dbeafe;margin-top:6px;}
 .blue{background:#0d6efd;}
 .gray{background:#64748b;}
